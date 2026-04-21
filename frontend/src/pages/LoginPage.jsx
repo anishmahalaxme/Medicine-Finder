@@ -2,24 +2,50 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../state/auth.jsx';
 
+import { verifyAdminToken } from '../api/admin.js';
+
 export default function LoginPage() {
   const nav = useNavigate();
   const { user, login } = useAuth();
   const [email, setEmail] = useState('demo@customer.com');
   const [role, setRole] = useState('customer');
+  const [token, setToken] = useState('change-me');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const valid = useMemo(() => /\S+@\S+\.\S+/.test(email), [email]);
 
-  function onSubmit(e) {
+  async function onSubmit(e) {
     e.preventDefault();
     setError('');
     if (!valid) {
       setError('Enter a valid email.');
       return;
     }
-    login({ email, role });
-    nav('/');
+
+    if (role === 'admin') {
+      if (!token) {
+        setError('Admin token required.');
+        return;
+      }
+      setLoading(true);
+      try {
+        const res = await verifyAdminToken(token);
+        if (!res.ok) {
+          setError('Invalid admin token.');
+          setLoading(false);
+          return;
+        }
+      } catch (err) {
+        setError('Error verifying token.');
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+    }
+
+    login({ email, role, token: role === 'admin' ? token : null });
+    nav(role === 'admin' ? '/admin' : '/');
   }
 
   return (
@@ -49,10 +75,25 @@ export default function LoginPage() {
             </select>
           </div>
 
-          {error ? <div className="error">{error}</div> : null}
+          {role === 'admin' && (
+            <div>
+              <div className="label">Admin Token</div>
+              <input 
+                className="input" 
+                type="password" 
+                value={token} 
+                onChange={(e) => setToken(e.target.value)} 
+                placeholder="Enter secret admin token..." 
+              />
+            </div>
+          )}
+
+          {error ? <div className="error" style={{ color: 'red' }}>{error}</div> : null}
 
           <div className="row" style={{ flexWrap: 'wrap' }}>
-            <button className="btn primary" type="submit">Sign in</button>
+            <button className="btn primary" type="submit" disabled={loading}>
+              {loading ? 'Verifying...' : 'Sign in'}
+            </button>
             <button className="btn" type="button" onClick={() => nav('/')}>Cancel</button>
           </div>
         </form>

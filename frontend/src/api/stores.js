@@ -11,9 +11,14 @@ export async function fetchNearbyStores({ lat, lng, radius }) {
   return data.items || [];
 }
 
+export async function fetchStoreDetail(storeId) {
+  const url = buildUrl(`/stores/${storeId}`);
+  return await getJSON(url);
+}
+
+// Backward compatibility for existing UI
 export async function fetchStoreMedicines(storeId) {
-  const url = buildUrl(`/stores/${storeId}/medicines`);
-  const data = await getJSON(url);
-  return data.items || [];
+  const data = await fetchStoreDetail(storeId);
+  return data.medicines || [];
 }
 

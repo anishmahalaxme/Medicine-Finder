@@ -58,23 +58,36 @@ router.get('/nearby', validate(nearbySchema), async (req, res, next) => {
     ];
 
     const [rows] = await pool.query(sql, params);
+    res.set('Cache-Control', 'no-store');
     res.json({ items: rows });
   } catch (e) {
     next(e);
   }
 });
 
-// GET /stores/:id/medicines
-const storeMedsSchema = z.object({
+// GET /stores/:id
+const storeSchema = z.object({
   params: z.object({
     id: z.coerce.number()
   })
 });
 
-router.get('/:id/medicines', validate(storeMedsSchema), async (req, res, next) => {
+router.get('/:id', validate(storeSchema), async (req, res, next) => {
   try {
     const storeId = Number(req.validated.params.id);
-    const sql = `
+    
+    // Get store details
+    const [storeRows] = await pool.query(
+      'SELECT * FROM medical_store WHERE store_id = ?',
+      [storeId]
+    );
+
+    if (storeRows.length === 0) {
+      return res.status(404).json({ error: 'Store not found' });
+    }
+
+    // Get store medicines
+    const sqlMeds = `
       SELECT
         m.medicine_id,
         m.medicine_name,
@@ -87,10 +100,23 @@ router.get('/:id/medicines', validate(storeMedsSchema), async (req, res, next) =
       JOIN medicine m ON m.medicine_id = s.medicine_id
       WHERE s.store_id = ?
       ORDER BY m.medicine_name ASC
-      LIMIT 500;
+      LIMIT 1000;
     `;
-    const [rows] = await pool.query(sql, [storeId]);
-    res.json({ items: rows });
+    const [medicineRows] = await pool.query(sqlMeds, [storeId]);
+    
+    // Calculate simple stats
+    const inStock = medicineRows.filter(m => m.quantity > 0).length;
+
+    res.set('Cache-Control', 'no-store');
+    res.json({
+      store: storeRows[0],
+      stats: {
+        total_medicines: medicineRows.length,
+        in_stock_count: inStock,
+        out_of_stock_count: medicineRows.length - inStock
+      },
+      medicines: medicineRows
+    });
   } catch (e) {
     next(e);
   }

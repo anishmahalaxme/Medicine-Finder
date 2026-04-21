@@ -21,6 +21,12 @@ app.use(
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 
+// Prevent browser from caching API responses (avoids stale 304s)
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 app.use('/medicines', medicinesRouter);
 app.use('/stores', storesRouter);
 app.use('/admin', adminRouter);

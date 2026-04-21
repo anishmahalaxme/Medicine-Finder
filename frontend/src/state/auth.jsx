@@ -23,11 +23,12 @@ export function AuthProvider({ children }) {
       return next;
     }
 
-    function login({ email, role }) {
+    function login({ email, role, token }) {
       const user = {
         name: email?.split('@')?.[0] || 'User',
         email,
-        role: role || 'customer'
+        role: role || 'customer',
+        token
       };
       setState(persist({ user }));
       return user;

@@ -2,9 +2,10 @@ import React, { createContext, useContext, useMemo, useState } from 'react';
 
 const GeoContext = createContext(null);
 
+// Default: Kondhwa, Pune
 const DEFAULT_GEO = {
-  lat: '12.971599',
-  lng: '77.594566',
+  lat: '18.4816',
+  lng: '73.8929',
   radius: '5'
 };
 

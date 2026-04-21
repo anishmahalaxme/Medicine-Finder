@@ -22,14 +22,14 @@ export default function AppShell() {
   return (
     <div>
       <Navbar />
-      {location.pathname === '/' ? (
+      {location.pathname === '/' || location.pathname === '/nearby' || location.pathname.startsWith('/stores/') ? (
         <div className="page">
           <Outlet />
         </div>
       ) : (
         <div className="container page">
-          {/* Keep geo controls visible on key pages */}
-          {location.pathname === '/find' || location.pathname === '/nearby' ? (
+          {/* Keep geo controls visible on search pages */}
+          {location.pathname === '/find' || location.pathname === '/find-medicine' ? (
             <GeoControls
               lat={geo.lat}
               lng={geo.lng}

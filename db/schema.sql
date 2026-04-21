@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS medical_store (
   latitude DECIMAL(9,6) NOT NULL,
   longitude DECIMAL(9,6) NOT NULL,
   address VARCHAR(255) NOT NULL,
+  opening_hours VARCHAR(100) NOT NULL DEFAULT '8:00 AM - 10:00 PM',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (store_id),
   KEY idx_store_lat_lng (latitude, longitude),

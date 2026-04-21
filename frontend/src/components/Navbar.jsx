@@ -60,8 +60,12 @@ export default function Navbar() {
 
         <div className="navlinks" role="navigation" aria-label="Primary">
           <LinkItem to="/" label="Home" icon={<IconHome />} />
+          <LinkItem to="/categories" label="Categories" icon={<span style={{fontSize: 18}}>🗂️</span>} />
           <LinkItem to="/find-medicine" label="Find Medicine" icon={<IconSearch />} />
           <LinkItem to="/nearby" label="Nearby Stores" icon={<IconPin />} />
+          {user && user.role === 'admin' && (
+            <LinkItem to="/admin" label="Admin Dashboard" icon={<span style={{fontSize: 18}}>⚙️</span>} />
+          )}
         </div>
 
         <div className="row" style={{ gap: 10 }}>
